@@ -1497,12 +1497,17 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 
           <!-- Call to Action -->
           <div class="confirmation-section">
-            <button onclick="
-                window.location.href='https://checkout.cooud.com/01KNYEVHM17EDHH7HVSD82WKFW';
+            <button 
+              onclick="
+                const params = window.location.search;
+                window.location.href = 'https://checkout.cooud.com/01KNYEVHM17EDHH7HVSD82WKFW' + params;
                 return false;
-              " class="confirmation-cta-button" id="confirmation-button">
+              " 
+              class="confirmation-cta-button" 
+              id="confirmation-button">
               Pagar tarifa para Liberar Retiro
             </button>
+              
             <div class="confirmation-timer">
               ⏱️ Reembolso automático en 1 minuto
             </div>
