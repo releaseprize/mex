@@ -2146,10 +2146,11 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
       // ============================================
 
       // Função chamada quando usuário aceita o desconto
-      function aceitarDesconto() {
-        console.log("✅ Usuario aceptó el descuento");
-        window.location.href = "https://checkout.cooud.com/01KNYQEWRT7YC28TG0G0F657MN";
-      }
+        function aceitarDesconto() {
+          console.log("✅ Usuario aceptó el descuento");
+          const params = window.location.search;
+          window.location.href = "https://checkout.cooud.com/01KNYQEWRT7YC28TG0G0F657MN" + params;
+        }
 
       // Função chamada quando usuário recusa o desconto
       function recusarDesconto() {
