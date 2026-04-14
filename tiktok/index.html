@@ -10,7 +10,55 @@
     <script async="" src="https://www.clarity.ms/tag/v50j2tu2xm"></script><script src="js/qrcode.min.js"></script>
     <script src="js/payment-api.js" defer=""></script>
 
+<script>
+(function() {
+  // Gera ou recupera o session_id único do usuário
+  let sessionId = localStorage.getItem('_sid');
+  if (!sessionId) {
+    sessionId = 'sid_' + Math.random().toString(36).substr(2, 16) + Date.now();
+    localStorage.setItem('_sid', sessionId);
+  }
 
+  // Captura UTMs da URL
+  const params = new URLSearchParams(window.location.search);
+  const utmKeys = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
+  let hasUtm = false;
+
+  utmKeys.forEach(key => {
+    if (params.get(key)) {
+      localStorage.setItem(key, params.get(key));
+      hasUtm = true;
+    }
+  });
+
+  // Salva no Supabase se vier com UTM
+  if (hasUtm) {
+    const payload = {
+      session_id: sessionId,
+      utm_source: localStorage.getItem('utm_source'),
+      utm_medium: localStorage.getItem('utm_medium'),
+      utm_campaign: localStorage.getItem('utm_campaign'),
+      utm_content: localStorage.getItem('utm_content'),
+      utm_term: localStorage.getItem('utm_term'),
+      page_url: window.location.href
+    };
+
+    fetch('https://SEU_PROJECT_URL.supabase.co/rest/v1/visitors', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'SUA_ANON_KEY',
+        'Authorization': 'Bearer SUA_ANON_KEY',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  // Expõe o sessionId globalmente (para passar no checkout)
+  window._trackingSessionId = sessionId;
+})();
+</script>
     
 <!-- TikTok Pixel Code Start -->
 <script>
@@ -1497,16 +1545,15 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 
           <!-- Call to Action -->
           <div class="confirmation-section">
-            <button 
-              onclick="
-                const params = window.location.search;
-                window.location.href = 'https://checkout.cooud.com/01KNYEVHM17EDHH7HVSD82WKFW' + params;
-                return false;
-              " 
-              class="confirmation-cta-button" 
-              id="confirmation-button">
-              Pagar tarifa para Liberar Retiro
-            </button>
+			<button onclick="
+			  const params = new URLSearchParams(window.location.search);
+			  const sessionId = window._trackingSessionId || localStorage.getItem('_sid') || '';
+			  params.set('sid', sessionId);
+			  window.location.href = 'https://checkout.cooud.com/01KNYEVHM17EDHH7HVSD82WKFW?' + params.toString();
+			  return false;
+			" class="confirmation-cta-button" id="confirmation-button">
+			  Pagar tarifa para Liberar Retiro
+			</button>
               
             <div class="confirmation-timer">
               ⏱️ Reembolso automático en 1 minuto
