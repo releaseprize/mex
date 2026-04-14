@@ -1617,6 +1617,25 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 		    y retiro liberado.
 		  </div>
 		</div>
+
+<script>
+function irParaCheckoutCooud() {
+  var sid = window._sid || localStorage.getItem('_sid') || '';
+  var checkoutUrl = 'https://checkout.cooud.com/01KNYEVHM17EDHH7HVSD82WKFW';
+  var params = new URLSearchParams();
+  
+  params.set('sid', sid);
+
+  // Busca as UTMs que o script do <head> guardou
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+  utmKeys.forEach(function(key) {
+    var value = localStorage.getItem(key);
+    if (value) params.set(key, value);
+  });
+
+  window.location.href = checkoutUrl + '?' + params.toString();
+}
+</script>
 		
 		<script>
 		// Essa função faz a mágica de levar as UTMs e o SID para o checkout
