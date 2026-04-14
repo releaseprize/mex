@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="es"><head>
+<!DOCTYPE html><html lang="es">
+	<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
@@ -10,55 +11,113 @@
     <script async="" src="https://www.clarity.ms/tag/v50j2tu2xm"></script><script src="js/qrcode.min.js"></script>
     <script src="js/payment-api.js" defer=""></script>
 
+<!--
+  ============================================
+  TRACKING DE UTMs — Cole antes do </head>
+  ============================================
+-->
 <script>
-(function() {
-  // Gera ou recupera o session_id único do usuário
+(function () {
+  const SUPABASE_URL = 'https://gzsxyczfckipomlkdivr.supabase.co';
+  const SUPABASE_ANON_KEY = 'CeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6c3h5Y3pmY2tpcG9tbGtkaXZyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjEyNDE3MywiZXhwIjoyMDkxNzAwMTczfQ.kPCWEKzxAeNJWO3JUhcnd2biSme73QjtQeQDOAIRRcc'; // Settings → API → anon public
+
+  // ─────────────────────────────────────────
+  // 1. Gera ou recupera o session_id único
+  // ─────────────────────────────────────────
   let sessionId = localStorage.getItem('_sid');
   if (!sessionId) {
-    sessionId = 'sid_' + Math.random().toString(36).substr(2, 16) + Date.now();
+    sessionId = 'sid_' + Math.random().toString(36).substr(2, 16) + '_' + Date.now();
     localStorage.setItem('_sid', sessionId);
   }
 
-  // Captura UTMs da URL
+  // ─────────────────────────────────────────
+  // 2. Captura UTMs da URL atual
+  // ─────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
-  const utmKeys = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
   let hasUtm = false;
 
-  utmKeys.forEach(key => {
+  utmKeys.forEach(function (key) {
     if (params.get(key)) {
       localStorage.setItem(key, params.get(key));
       hasUtm = true;
     }
   });
 
-  // Salva no Supabase se vier com UTM
+  // ─────────────────────────────────────────
+  // 3. Salva no Supabase se vier com UTM
+  // ─────────────────────────────────────────
   if (hasUtm) {
-    const payload = {
+    var payload = {
       session_id: sessionId,
-      utm_source: localStorage.getItem('utm_source'),
-      utm_medium: localStorage.getItem('utm_medium'),
+      utm_source:   localStorage.getItem('utm_source'),
+      utm_medium:   localStorage.getItem('utm_medium'),
       utm_campaign: localStorage.getItem('utm_campaign'),
-      utm_content: localStorage.getItem('utm_content'),
-      utm_term: localStorage.getItem('utm_term'),
-      page_url: window.location.href
+      utm_content:  localStorage.getItem('utm_content'),
+      utm_term:     localStorage.getItem('utm_term'),
+      page_url:     window.location.href
     };
 
-    fetch('https://SEU_PROJECT_URL.supabase.co/rest/v1/visitors', {
+    fetch(SUPABASE_URL + '/rest/v1/visitors', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': 'SUA_ANON_KEY',
-        'Authorization': 'Bearer SUA_ANON_KEY',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
         'Prefer': 'resolution=merge-duplicates'
       },
       body: JSON.stringify(payload)
+    }).then(function (res) {
+      if (res.ok) console.log('[Tracker] Visitante salvo ✅');
+      else console.warn('[Tracker] Erro ao salvar visitante');
+    }).catch(function (err) {
+      console.error('[Tracker] Erro:', err);
     });
   }
 
-  // Expõe o sessionId globalmente (para passar no checkout)
-  window._trackingSessionId = sessionId;
+  // ─────────────────────────────────────────
+  // 4. Expõe o sessionId globalmente
+  //    Use window._sid nos botões de compra
+  // ─────────────────────────────────────────
+  window._sid = sessionId;
+
 })();
 </script>
+
+<!--
+  ============================================
+  BOTÃO DE COMPRA — Exemplo de uso
+  Substitua a URL pelo seu checkout IronPay
+  ============================================
+-->
+
+<!-- Exemplo de botão que passa o session_id para o checkout -->
+<button onclick="irParaCheckout()">Comprar agora</button>
+
+<script>
+function irParaCheckout() {
+  var sid = window._sid || '';
+
+  // ⚠️ Substitua pela URL real do seu produto na IronPay
+  var checkoutUrl = 'https://checkout.ironpay.com.br/SEU_PRODUTO?sid=' + sid;
+
+  // Também adiciona os UTMs na URL caso a IronPay leia direto
+  var utmSource   = localStorage.getItem('utm_source')   || '';
+  var utmMedium   = localStorage.getItem('utm_medium')   || '';
+  var utmCampaign = localStorage.getItem('utm_campaign') || '';
+  var utmContent  = localStorage.getItem('utm_content')  || '';
+  var utmTerm     = localStorage.getItem('utm_term')     || '';
+
+  if (utmSource)   checkoutUrl += '&utm_source='   + encodeURIComponent(utmSource);
+  if (utmMedium)   checkoutUrl += '&utm_medium='   + encodeURIComponent(utmMedium);
+  if (utmCampaign) checkoutUrl += '&utm_campaign=' + encodeURIComponent(utmCampaign);
+  if (utmContent)  checkoutUrl += '&utm_content='  + encodeURIComponent(utmContent);
+  if (utmTerm)     checkoutUrl += '&utm_term='     + encodeURIComponent(utmTerm);
+
+  window.location.href = checkoutUrl;
+}
+</script>
+
     
 <!-- TikTok Pixel Code Start -->
 <script>
